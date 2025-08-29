@@ -53,6 +53,23 @@ void handler_sigint(int signum) {
 
 
 /*
+ * Remove client at given index from client list.
+ * - `server`: pointer to instance of server
+ * - `index`: index of the client that needs to be removed
+ * - `count`: pointer to client tracker
+ */
+void remove_client(Server *server, int index, int *count) {
+    if (index < 0 || index >= server->max_clients) {
+        return;
+    }
+
+    close(server->client_lst[index].client_sock);         // close socket
+    memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
+    *count = *count - 1;
+}
+
+
+/*
  * Initialize a new server instance.
  * - `port`: the server port number
  * - `max_clients`: the max number of concurrent clients
@@ -64,7 +81,7 @@ void handler_sigint(int signum) {
  */
 Server *server_init(int port, int max_clients, int backlog) {
     // Setup server struct
-    Server *server = malloc(sizeof(struct Server));
+    Server *server = malloc(sizeof(Server));
     if (!server) {
         perror("malloc failed. Aborting server initialization.");
         return NULL;
@@ -74,12 +91,12 @@ Server *server_init(int port, int max_clients, int backlog) {
     server->max_clients = max_clients;
     server->backlog = backlog;
     
-    int len_lst = sizeof(client_t) * max_clients
+    int len_lst = sizeof(client_t) * max_clients;
     server->client_lst = malloc(len_lst);
     if (!server->client_lst) {
         perror("malloc failed. Aborting server initialization.");
         free(server);
-        return NULL
+        return NULL;
     }
     for (int i = 0; i < len_lst; i++) {
         memset(&server->client_lst[i], 0, sizeof(server->client_lst[i])); // Ensure safety by removing old data
@@ -167,7 +184,7 @@ int server_start(Server *server) {
     while (running) {
         // Socket tracking set creation
         FD_ZERO(&sock_set);
-        FD_SET(sockfd, &sock_set);
+        FD_SET(server->sockfd, &sock_set);
         max_fd = server->sockfd; // max fd since it's the only fd (for now)
         
         // Add client fds to set
@@ -181,7 +198,7 @@ int server_start(Server *server) {
         }
 
         // Check for activity
-        if (select(max_fd + 1, &readfds, NULL, NULL, NULL)< 0) {
+        if (select(max_fd + 1, &sock_set, NULL, NULL, NULL)< 0) {
             perror("selection failed. Skipping.");
             continue; // skip iteration
         }
@@ -203,7 +220,7 @@ int server_start(Server *server) {
                 }
                 if (server->client_lst[i].client_sock == 0) {
                     num_clients++;
-                    server->client_lst[i].client_sock = new_sock;
+                    server->client_lst[i].client_sock = new_socket;
                     server->client_lst[i].addr = client_addr;
                     break;
                 }
@@ -239,22 +256,8 @@ int server_start(Server *server) {
            }
         }
     }
+    return 1;
 }
 
 
-/*
- * Remove client at given index from client list.
- * - `server`: pointer to instance of server
- * - `index`: index of the client that needs to be removed
- * - `count`: pointer to client tracker
- */
-void remove_client(Server *server, int index, int *count) {
-    if (index < 0 || index >= server->client_count) {
-        return;
-    }
-
-    close(server->client_lst[index].client_sock);         // close socket
-    memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
-    *count = *count - 1;
-}
 

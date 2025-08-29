@@ -1,6 +1,6 @@
 #pragma once
 
-typedef enum {"GET", "POST", "PUT", "DELETE"} method_t;
+typedef enum {GET, POST, PUT, DELETE} method_t;
 
 typedef char * path_t;
 

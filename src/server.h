@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <signal.h> // Necessary for handling signals
+#include <errno.h>    // defines errno, EINTR, EAGAIN, EWOULDBLOCK
 
 #include "utils.h"
 
@@ -26,8 +27,8 @@ typedef struct {
     struct sockaddr_in addr;  // server address
     int port;                 // server port
     int max_clients;          // server max amount of concurrent clients
-    client_t *client_lst      // list of connected clients
-    int backlog               // max number of partially completed connections (queue for clients)
+    client_t *client_lst;     // list of connected clients
+    int backlog;              // max number of partially completed connections (queue for clients)
                               // Future: dynamic route table
 } Server;
 
