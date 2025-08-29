@@ -1,3 +1,22 @@
+/**
+ * server.h
+ *
+ * Defines the Server struct, client struct, and server-related function
+ * prototypes for creating, initializing, and managing a TCP server.
+ *
+ * Includes:
+ *   - Standard headers for networking and system calls
+ *   - Utility headers
+ *
+ * Usage:
+ *   Include this file in your source files that need to interact with
+ *   the server, e.g. server.c or main.c.
+ *
+ * Author: Karl-Alexandre Michaud
+ * Date: 2025-08-29
+ */
+
+
 #pragma once
 
 // Include all necessary headers for server
