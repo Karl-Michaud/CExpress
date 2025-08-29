@@ -8,19 +8,26 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h> // Necessary for handling signals
 
 #include "utils.h"
 
 // User defined constants
 #define BUFFER_SIZE 1024
 
+
+typedef struct {
+    int client_sock;          // client socket
+    struct sockaddr_in addr;  // client address
+} client_t;
+
 typedef struct {
     int sockfd;               // server socket
     struct sockaddr_in addr;  // server address
     int port;                 // server port
     int max_clients;          // server max amount of concurrent clients
-    fd_set sock_set           // all client/server sockets being monitored by server (used for select() sys call)
-    int max_fd                // biggest file descriptor (used for select() sys call)
+    client_t *client_lst      // list of connected clients
+    int backlog               // max number of partially completed connections (queue for clients)
                               // Future: dynamic route table
 } Server;
 
@@ -29,10 +36,11 @@ typedef struct {
  * Initialize a new server instance.
  * - `port`: the server port number
  * - `max_clients`: the max number of concurrent clients
+ * - `backlog`: numberof partially completed connections (queue for clients)
  *
  * NOTE: Call server_free() to shut down server and free allocated memory.
  */
-Server *server_init(int port, int max_clients);
+Server *server_init(int port, int max_clients, int backlog);
 
 /*
  * Free server resources. This, by extension, kills the server.
