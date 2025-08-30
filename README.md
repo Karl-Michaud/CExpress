@@ -1,2 +1,2 @@
 # CExpress
-Like Express.js but in C.
+Like Express.js (or Flask) but for C.
