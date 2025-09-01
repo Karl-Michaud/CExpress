@@ -303,6 +303,7 @@ int server_start(Server *server) {
                 } else {
                     // Read was successfull
                     // process data!
+                    process_header(buffer, &server->router_lst, server->client_lst[i].client_sock);
                     continue;
                 }
            }
