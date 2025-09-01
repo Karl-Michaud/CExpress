@@ -1,44 +1,45 @@
 /**
  * @file server.c
- * @brief Implements the core server functionality for the CExpress framework.
+ * @brief Core server implementation for the CExpress framework.
  *
- * This file contains the implementation of the Server structure and its
- * associated functions that handle server initialization, socket configuration,
- * listening for client connections, and managing HTTP-like routes.
+ * This file provides the core logic for initializing and running a lightweight 
+ * HTTP-like server in C. It defines and manages the Server structure, handling 
+ * socket creation, binding, listening for incoming client connections, and 
+ * routing requests to appropriate handlers based on the registered routes.
  *
- * Responsibilities:
- *  - Initialize and configure the server socket.
- *  - Start listening for incoming connections on the specified port.
- *  - Provide a mechanism for adding routes with their associated handlers.
- *  - Clean up server resources before shutdown.
+ * **Responsibilities:**
+ *  - Configure and initialize the server socket.
+ *  - Start listening for incoming TCP connections on a specified port.
+ *  - Dispatch client requests to the appropriate route handlers.
+ *  - Provide utilities for adding and managing routes dynamically.
+ *  - Clean up all allocated resources during shutdown.
  *
- * Key Functions:
- *  - server_init()     : Allocates and initializes a new Server instance.
- *  - server_start()    : Starts the server to accept and handle client requests.
- *  - server_add_route(): Registers a route handler for a given HTTP method and path.
- *  - server_free()     : Releases resources allocated by the server.
+ * **Key Functions:**
+ *  - `server_init()`      : Creates and configures a new Server instance.
+ *  - `server_add_route()` : Registers a route with a handler for a specific HTTP method.
+ *  - `server_start()`     : Begins accepting and handling client connections.
+ *  - `server_free()`      : Frees all resources associated with the server.
  *
- * Typical Usage:
+ * **Example Usage:**
  *  @code
- *  Server *server = server_init(server; 8080, 10);
+ *  Server *server = server_init(8080, 10);
  *  if (!server) {
- *      fprintf(stderr, "Failed to initialize server\n");
+ *      fprintf(stderr, "Server initialization failed\n");
  *      return 1;
  *  }
  *
  *  server_add_route(server, "GET", "/hello", hello_handler);
  *  server_start(server);
- *  
- *  // Free all heap allocated values
+ *
  *  server_free(server);
  *  @endcode
  *
- * @note All dynamically allocated resources must be released using server_free()
- *       to prevent memory leaks.
+ * @note Always call `server_free()` after the server loop ends to avoid memory leaks.
  *
  * @author  Karl-Alexandre Michaud
  * @date    2025-08-29
  */
+
 
 #include "server.h"
 
@@ -47,16 +48,31 @@ volatile sig_atomic_t running = 0; // `volatile` prevents compiler optimizations
                                    // `sig_atomic_t` guarantees atomic read/write in a signal handler (designed for sig handlers).
 
 
+/**
+ * @brief Signal handler for SIGINT (Ctrl+C).
+ *
+ * This function is triggered when the server receives a SIGINT signal.
+ * It sets the global `running` flag to 0, which signals the main loop
+ * in `server_start()` to exit gracefully.
+ *
+ * @param signum The signal number (unused).
+ *
+ * @note Uses `sig_atomic_t` to ensure atomic operations inside signal handler.
+ */
 void handler_sigint(int signum) {
     running = 0; // Safe since type `sig_atomic_t`is designed for signal handlers
 }
 
 
-/*
- * Remove client at given index from client list.
- * - `server`: pointer to instance of server
- * - `index`: index of the client that needs to be removed
- * - `count`: pointer to client tracker
+/**
+ * @brief Removes a client from the server's client list.
+ *
+ * Closes the client's socket, clears the client structure, 
+ * and updates the active client count.
+ *
+ * @param server Pointer to the Server instance.
+ * @param index  Index of the client in the client list to remove.
+ * @param count  Pointer to the active client counter (decremented on removal).
  */
 void remove_client(Server *server, int index, int *count) {
     if (index < 0 || index >= server->max_clients) {
@@ -69,15 +85,20 @@ void remove_client(Server *server, int index, int *count) {
 }
 
 
-/*
- * Initialize a new server instance.
- * - `port`: the server port number
- * - `max_clients`: the max number of concurrent clients
- * - `backlog`: numberof partially completed connections (queue)
- * 
- * Returns pointer server struct if success, and NULL otherwise.
+/**
+ * @brief Initializes a new Server instance.
  *
- * NOTE: Call server_free() to shut down server and free allocated memory.
+ * Allocates and configures a server structure, creates the TCP socket,
+ * sets socket options (SO_REUSEADDR), and binds the socket to the given port.
+ *
+ * @param port        The TCP port number for the server to listen on.
+ * @param max_clients Maximum number of concurrent clients supported.
+ * @param backlog     Maximum number of queued connection requests.
+ *
+ * @return Pointer to a dynamically allocated Server structure on success, 
+ *         or NULL on failure.
+ *
+ * @note Caller is responsible for freeing resources using `server_free()`.
  */
 Server *server_init(int port, int max_clients, int backlog) {
     // Setup server struct
@@ -137,9 +158,14 @@ Server *server_init(int port, int max_clients, int backlog) {
 }
 
 
-/*
- * Free server resources. This, by extension, kills the server.
- * - `server`: pointer to Server struct
+/**
+ * @brief Frees all resources associated with the server.
+ *
+ * Closes the server socket (if open) and releases all dynamically allocated memory.
+ *
+ * @param server Pointer to the Server instance to free.
+ *
+ * @return Always returns 1.
  */
 int server_free(Server *server) {
     if (server->sockfd > 0) {
@@ -151,9 +177,21 @@ int server_free(Server *server) {
 }
 
 
-/*
- * Start listening and handling requests.
- * - `server`: pointer to Server stuct
+/**
+ * @brief Starts the server's main loop to accept and handle client connections.
+ *
+ * This function:
+ *  - Listens for incoming TCP connections using `listen()`.
+ *  - Handles `SIGINT` for graceful shutdown.
+ *  - Uses `select()` to monitor multiple client sockets for incoming data.
+ *  - Accepts new clients and tracks them in the client list.
+ *  - Removes clients on disconnection or read errors.
+ *
+ * @param server Pointer to the Server instance.
+ *
+ * @return 1 on successful shutdown, -1 if an error occurred during setup.
+ *
+ * @note This function runs an infinite loop until interrupted by SIGINT.
  */
 int server_start(Server *server) {
     fd_set sock_set;     // all client/server sockets being monitored by server (used for select() sys call)
@@ -258,6 +296,4 @@ int server_start(Server *server) {
     }
     return 1;
 }
-
-
 

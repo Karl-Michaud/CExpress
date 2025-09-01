@@ -1,7 +1,6 @@
 /**
- * server.h
- *
- * Defines the Server struct, client struct, and server-related function
+ * @file server.h
+ * @brief Defines the Server struct, client struct, and server-related function
  * prototypes for creating, initializing, and managing a TCP server.
  *
  * Includes:
@@ -10,10 +9,10 @@
  *
  * Usage:
  *   Include this file in your source files that need to interact with
- *   the server, e.g. server.c or main.c.
+ *   the server, e.g., server.c or main.c.
  *
- * Author: Karl-Alexandre Michaud
- * Date: 2025-08-29
+ * @author Karl-Alexandre Michaud
+ * @date 2025-08-29
  */
 
 
@@ -32,11 +31,22 @@
 #define BUFFER_SIZE 1024
 
 
+
+/**
+ * @struct client_t
+ * @brief Represents a connected client.
+ */
+typedef struc
 typedef struct {
     int client_sock;          // client socket
     struct sockaddr_in addr;  // client address
 } client_t;
 
+
+/**
+ * @struct Server
+ * @brief Represents the TCP server configuration and state.
+ */
 typedef struct {
     int sockfd;               // server socket
     struct sockaddr_in addr;  // server address
@@ -48,35 +58,55 @@ typedef struct {
 } Server;
 
 
-/*
- * Initialize a new server instance.
- * - `port`: the server port number
- * - `max_clients`: the max number of concurrent clients
- * - `backlog`: numberof partially completed connections (queue for clients)
+
+/**
+ * @brief Initializes a new server instance.
  *
- * NOTE: Call server_free() to shut down server and free allocated memory.
+ * Allocates memory for the server and prepares it for binding and listening.
+ *
+ * @param port The TCP port number the server should bind to.
+ * @param max_clients Maximum number of concurrent client connections allowed.
+ * @param backlog Maximum number of pending connections in the listen queue.
+ * @return Pointer to a dynamically allocated Server struct on success, or NULL on failure.
+ *
+ * @note Use server_free() to properly shut down and free allocated memory.
  */
 Server *server_init(int port, int max_clients, int backlog);
 
-/*
- * Free server resources. This, by extension, kills the server.
- * - `server`: pointer to Server struct
+
+/**
+ * @brief Frees all server resources and shuts down the server.
+ *
+ * Closes the socket and deallocates any memory used by the server instance.
+ *
+ * @param server Pointer to the Server struct to be freed.
+ * @return 0 on success, -1 on failure (e.g., invalid pointer).
  */
 int server_free(Server *server);
 
-/*
- * Start listening and handling requests.
- * - `server`: pointer to Server stuct
+
+/**
+ * @brief Starts the server and begins accepting client connections.
+ *
+ * This function binds the socket, listens for incoming connections,
+ * and handles client requests in a loop.
+ *
+ * @param server Pointer to the initialized Server struct.
+ * @return 0 on successful start, or -1 on error.
  */
 int server_start(Server *server);
 
 
-/*
- * Add a route to the server.
- * - `server`: pointer to Server struct
- * - `method`: type of method (e.g.: "GET", "POST", etc.)
- * - `path`: url path
- * - `handler`: function pointer to user defined handler function
+/**
+ * @brief Adds a new route to the server for handling HTTP requests.
+ *
+ * Associates an HTTP method and path with a handler function.
+ *
+ * @param server Pointer to the Server struct.
+ * @param method HTTP method (e.g., GET, POST, etc.).
+ * @param path The URL path for this route (e.g., "/users").
+ * @param handler A function pointer that handles the request for this route.
+ * @return 0 on success, -1 if adding the route fails.
  */
 int server_add_route(Server *server, method_t method, path_t path, HandlerFunc handler);
 
