@@ -311,3 +311,47 @@ int server_start(Server *server) {
     return 1;
 }
 
+
+/**
+ * @brief Adds a new route to the router list.
+ *
+ * Creates a Router struct from the provided method, path, and handler,
+ * and adds it to the dynamic RouterList. Expands the list capacity if needed.
+ *
+ * @param routers Pointer to the RouterList where the route will be added.
+ * @param method  The HTTP method (GET, POST, PUT, DELETE) for this route.
+ * @param path    The path (URL) that this route should match.
+ * @param handler The function to handle requests matching this method and path.
+ *
+ * @return 1 on success, 0 if adding the route fails (e.g., memory allocation failure).
+ */
+int server_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler) {
+    Router new_router;
+    new_router.method = method;
+    new_router.path = path;
+    new_router.handler = handler;
+
+    return add_route(routers, new_router);
+}
+
+
+/**
+ * @brief Removes a route from the router list by its index.
+ *
+ * Retrieves the Router at the given index and removes it from the RouterList.
+ * The route list is compacted to fill the removed slot.
+ *
+ * @param router_lst Pointer to the RouterList.
+ * @param index      Index of the route to remove (0-based).
+ *
+ * @return 1 if the route was successfully removed, 0 if the index is invalid.
+ */
+int server_remove_route(RouterList *router_lst, size_t index) {
+    if (index >= router_lst->count) {
+        return 0;
+    }
+
+    Router router_remove = router_lst->items[index];
+    return remove_route(router_lst, router_remove);
+}
+

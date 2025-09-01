@@ -26,6 +26,7 @@
 #include <errno.h>    // defines errno, EINTR, EAGAIN, EWOULDBLOCK
 
 #include "utils.h"
+#include "routers.h"
 
 // User defined constants
 #define BUFFER_SIZE 1024
@@ -54,7 +55,7 @@ typedef struct {
     int max_clients;          // server max amount of concurrent clients
     client_t *client_lst;     // list of connected clients
     int backlog;              // max number of partially completed connections (queue for clients)
-                              // Future: dynamic route table
+    RouterList router_list    // routing list               
 } Server;
 
 
@@ -100,13 +101,28 @@ int server_start(Server *server);
 /**
  * @brief Adds a new route to the server for handling HTTP requests.
  *
- * Associates an HTTP method and path with a handler function.
+ * This function associates an HTTP method and path with a handler function.
+ * If the router list is full, it will automatically resize the list.
  *
- * @param server Pointer to the Server struct.
- * @param method HTTP method (e.g., GET, POST, etc.).
- * @param path The URL path for this route (e.g., "/users").
- * @param handler A function pointer that handles the request for this route.
- * @return 0 on success, -1 if adding the route fails.
+ * @param routers Pointer to the RouterList in which to add the new route.
+ * @param method The HTTP method (GET, POST, PUT, DELETE) for this route.
+ * @param path The URL path string for this route.
+ * @param handler Function pointer that will handle requests matching method and path.
+ *
+ * @return 1 on success, 0 on failure (e.g., memory allocation failed).
  */
-int server_add_route(Server *server, method_t method, path_t path, HandlerFunc handler);
+int server_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler);
+
+
+/**
+ * @brief Removes a route from the server's router list.
+ *
+ * Deletes the route at the given index and shifts subsequent routes down.
+ *
+ * @param router_lst Pointer to the RouterList from which the route will be removed.
+ * @param index The index of the route to remove.
+ *
+ * @return 1 on success, 0 if index is invalid or removal fails.
+ */
+int server_remove_route(RouterList *router_lst, size_t index);
 
