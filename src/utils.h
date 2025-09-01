@@ -18,31 +18,6 @@
 
 
 /**
- * @enum method_t
- * @brief Enumeration of supported HTTP methods.
- */
-typedef enum {GET, POST, PUT, DELETE} method_t;
-
-
-/**
- * @typedef path_t
- * @brief Alias for representing a URL path.
- */
-typedef char * path_t;
-
-
-/**
- * @typedef HandlerFunc
- * @brief Function pointer type for handling client requests.
- *
- * @param client_sock The client socket descriptor.
- * @param request The raw HTTP request string.
- */
-typedef void (*HandlerFunc)(int client_sock, const char *request);
-
-
-
-/**
  * @brief Extracts all key-value pairs from an HTTP header buffer.
  *
  * Matches lines of the form:
@@ -82,3 +57,4 @@ char **split(const char *buffer, size_t buff_size, const char sep);
  *         The caller must free the allocated memory.
  */
 char **extract_lines(const char *buffer, size_t buff_size);
+
