@@ -100,11 +100,11 @@ void remove_client(Server *server, int index, int *count) {
  *
  * @note Caller is responsible for freeing resources using `server_free()`.
  */
-Server *server_init(int port, int max_clients, int backlog) {
-    // Setup server struct
-    Server *server = malloc(sizeof(Server));
+server *server_init(int port, int max_clients, int backlog) {
+    // setup server struct
+    Server *server = malloc(sizeof(server));
     if (!server) {
-        perror("malloc failed. Aborting server initialization.");
+        perror("malloc failed. aborting server initialization.");
         return NULL;
     }
 
@@ -115,16 +115,28 @@ Server *server_init(int port, int max_clients, int backlog) {
     int len_lst = sizeof(client_t) * max_clients;
     server->client_lst = malloc(len_lst);
     if (!server->client_lst) {
-        perror("malloc failed. Aborting server initialization.");
+        perror("malloc failed. aborting server initialization.");
         free(server);
-        return NULL;
+        return null;
     }
     for (int i = 0; i < len_lst; i++) {
-        memset(&server->client_lst[i], 0, sizeof(server->client_lst[i])); // Ensure safety by removing old data
+        memset(&server->client_lst[i], 0, sizeof(server->client_lst[i])); // ensure safety by removing old data
         server->client_lst[i].client_sock = 0;
     }
     
-    memset(&server->addr, 0, sizeof(server->addr)); // Ensure safety by removing old data
+    // initialize router list
+    server->router_list.count = 0;
+    server->router_list.capacity = 4; // initial capacity. will be expanded using exponential list format if necessary.
+    server->router_list.items = malloc(server->router_list.capacity * sizeof(Router));
+    if (!server->router_list.items) {
+        perror("malloc failed. aborting server initialization.");
+        free(server->client_lst);
+        free(server);
+        return NULL;
+    }
+    memset(server->router_list.items, 0, server->router_list.capacity * sizeof(Router));
+    
+    memset(&server->addr, 0, sizeof(server->addr));
     server->addr.sin_family = AF_INET;
     server->addr.sin_port = htons(port); // Necessary for big endian vs little endian
     server->addr.sin_addr.s_addr = INADDR_ANY;
@@ -134,6 +146,7 @@ Server *server_init(int port, int max_clients, int backlog) {
     if (sockfd == -1) {
         perror("socket creation failed. Aborting server initialization.");
         free(server->client_lst);
+        free(server->router_list.items);
         free(server);
         return NULL;
     }
@@ -172,6 +185,7 @@ int server_free(Server *server) {
         close(server->sockfd);
     }
     free(server->client_lst);
+    free(server->router_list.items);
     free(server);
     return 1;
 }
@@ -195,7 +209,7 @@ int server_free(Server *server) {
  */
 int server_start(Server *server) {
     fd_set sock_set;     // all client/server sockets being monitored by server (used for select() sys call)
-    int max_fd, num_clients;         
+    int max_fd, num_clients = 0;         
 
     // Listen for connections
     if (listen(server->sockfd, server->backlog) < 0) {
