@@ -5,12 +5,16 @@
  * This header defines the Router and RouterList structures, HTTP method enumeration,
  * handler function type, and functions for adding, removing, finding, and processing routes.
  * Routes map HTTP methods and paths to handler functions that handle client requests.
+ *
+ * @author Karl-Alexandre Michaud
+ * @date 2025-09-01
  */
 
 #pragma once
 
 
 #include "utils.h"
+#include "handler.h"
 
 
 /**
