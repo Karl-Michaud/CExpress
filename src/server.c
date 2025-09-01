@@ -72,16 +72,15 @@ void handler_sigint(int signum) {
  *
  * @param server Pointer to the Server instance.
  * @param index  Index of the client in the client list to remove.
- * @param count  Pointer to the active client counter (decremented on removal).
  */
-void remove_client(Server *server, int index, int *count) {
+void remove_client(Server *server, int index) {
     if (index < 0 || index >= server->max_clients) {
         return;
     }
-
+    
     close(server->client_lst[index].client_sock);         // close socket
+    free(server->client_lst[index].router_list.items);
     memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
-    *count = *count - 1;
 }
 
 
@@ -102,7 +101,7 @@ void remove_client(Server *server, int index, int *count) {
  */
 server *server_init(int port, int max_clients, int backlog) {
     // setup server struct
-    Server *server = malloc(sizeof(server));
+    Server *server = malloc(sizeof(Server));
     if (!server) {
         perror("malloc failed. aborting server initialization.");
         return NULL;
@@ -111,31 +110,35 @@ server *server_init(int port, int max_clients, int backlog) {
     server->port = port;
     server->max_clients = max_clients;
     server->backlog = backlog;
-    
-    int len_lst = sizeof(client_t) * max_clients;
-    server->client_lst = malloc(len_lst);
+    server->sockfd = -1; // Will be changed later if socket creation successful. Set to -1 for safety.
+
+    server->client_lst = malloc(sizeof(client_t) * max_clients);
     if (!server->client_lst) {
         perror("malloc failed. aborting server initialization.");
         free(server);
-        return null;
-    }
-    for (int i = 0; i < len_lst; i++) {
-        memset(&server->client_lst[i], 0, sizeof(server->client_lst[i])); // ensure safety by removing old data
-        server->client_lst[i].client_sock = 0;
-    }
-    
-    // initialize router list
-    server->router_list.count = 0;
-    server->router_list.capacity = 4; // initial capacity. will be expanded using exponential list format if necessary.
-    server->router_list.items = malloc(server->router_list.capacity * sizeof(Router));
-    if (!server->router_list.items) {
-        perror("malloc failed. aborting server initialization.");
-        free(server->client_lst);
-        free(server);
         return NULL;
     }
-    memset(server->router_list.items, 0, server->router_list.capacity * sizeof(Router));
-    
+    for (int i = 0; i < max_clients; i++) {
+        memset(&server->client_lst[i], 0, sizeof(client_t)); // ensure safety by removing old data
+        server->client_lst[i].client_sock = 0;
+
+        // Init router list for each client
+        server->client_lst[i].router_list.count = 0;
+        server->client_lst[i].router_list.capacity = 4;
+        server->client_lst[i].router_list.items = malloc(server->client_lst[i].router_list.capacity * sizeof(Router));
+        if (!server->client_lst[i].router_list.items) {
+            perror("malloc failed. aborting server initialization.");
+            // Free previously allocated router lists
+            for (int j = 0; j < i; j++) {
+                free(server->client_lst[j].router_list.items);
+            }
+            free(server->client_lst);
+            free(server);
+            return NULL;
+        }
+        memset(server->client_lst[i].router_list.items, 0, server->client_lst[i].router_list.capacity * sizeof(Router));
+    }
+        
     memset(&server->addr, 0, sizeof(server->addr));
     server->addr.sin_family = AF_INET;
     server->addr.sin_port = htons(port); // Necessary for big endian vs little endian
@@ -145,9 +148,7 @@ server *server_init(int port, int max_clients, int backlog) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0); // Protocol set by default to TCP
     if (sockfd == -1) {
         perror("socket creation failed. Aborting server initialization.");
-        free(server->client_lst);
-        free(server->router_list.items);
-        free(server);
+        server_free(server);
         return NULL;
     }
     server->sockfd = sockfd;
@@ -178,16 +179,18 @@ server *server_init(int port, int max_clients, int backlog) {
  *
  * @param server Pointer to the Server instance to free.
  *
- * @return Always returns 1.
  */
-int server_free(Server *server) {
-    if (server->sockfd > 0) {
+void server_free(Server *server) {
+    if (!server) return;
+
+    if (server->sockfd != -1) {
         close(server->sockfd);
     }
+    for (int j = 0; j < server->max_clients; j++) {
+        free(server->client_lst[j].router_list.items);
+    }
     free(server->client_lst);
-    free(server->router_list.items);
     free(server);
-    return 1;
 }
 
 
@@ -285,7 +288,8 @@ int server_start(Server *server) {
                 int chars_read = read(server->client_lst[i].client_sock, buffer, sizeof(buffer) - 1);
                 if (chars_read == 0) {
                     // Client has been disconnected. Remove from client list.
-                    remove_client(server, i, &num_clients);
+                    remove_client(server, i);
+                    num_clients--;
                 } else if (chars_read < 0) {
                     if (errno == EINTR) {
                         // Interrupted by a signal, safe to retry. Read will be tried again.
@@ -296,25 +300,34 @@ int server_start(Server *server) {
                     } else {
                         // Other errors: disconnect client
                         perror("read failed. Skipping");
-                        remove_client(server, i, &num_clients);
+                        remove_client(server, i);
+                        num_clients--;
                         break;
                     }
 
                 } else {
                     // Read was successfull
                     // process data!
-                    process_header(buffer, &server->router_lst, server->client_lst[i].client_sock);
+                    process_header(buffer, &server->client_lst[i]);
                     continue;
                 }
            }
         }
     }
+
+    // Cleanup when server stops
+    for (size_t i = 0; i < server->max_clients; i++) {
+        if (server->client_lst[i].client_sock > 0) {
+            remove_client(server, i);
+        }    
+    }
+    server_free(server);
     return 1;
 }
 
 
 /**
- * @brief Adds a new route to the router list.
+ * @brief Adds a new route to the client's router list.
  *
  * Creates a Router struct from the provided method, path, and handler,
  * and adds it to the dynamic RouterList. Expands the list capacity if needed.
@@ -326,7 +339,7 @@ int server_start(Server *server) {
  *
  * @return 1 on success, 0 if adding the route fails (e.g., memory allocation failure).
  */
-int server_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler) {
+int client_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler) {
     Router new_router;
     new_router.method = method;
     new_router.path = path;
@@ -337,7 +350,7 @@ int server_add_route(RouterList *routers, method_t method, path_t path, HandlerF
 
 
 /**
- * @brief Removes a route from the router list by its index.
+ * @brief Removes a route from the client's router list by its index.
  *
  * Retrieves the Router at the given index and removes it from the RouterList.
  * The route list is compacted to fill the removed slot.
@@ -347,7 +360,7 @@ int server_add_route(RouterList *routers, method_t method, path_t path, HandlerF
  *
  * @return 1 if the route was successfully removed, 0 if the index is invalid.
  */
-int server_remove_route(RouterList *router_lst, size_t index) {
+int client_remove_route(RouterList *router_lst, size_t index) {
     if (index >= router_lst->count) {
         return 0;
     }

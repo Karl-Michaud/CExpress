@@ -41,6 +41,7 @@ typedef struc
 typedef struct {
     int client_sock;          // client socket
     struct sockaddr_in addr;  // client address
+    RouterList router_lst     // routing list
 } client_t;
 
 
@@ -54,8 +55,7 @@ typedef struct {
     int port;                 // server port
     int max_clients;          // server max amount of concurrent clients
     client_t *client_lst;     // list of connected clients
-    int backlog;              // max number of partially completed connections (queue for clients)
-    RouterList router_list    // routing list               
+    int backlog;              // max number of partially completed connections (queue for clients)             
 } Server;
 
 
@@ -99,7 +99,7 @@ int server_start(Server *server);
 
 
 /**
- * @brief Adds a new route to the server for handling HTTP requests.
+ * @brief Adds a new route to the client's router list for handling HTTP requests.
  *
  * This function associates an HTTP method and path with a handler function.
  * If the router list is full, it will automatically resize the list.
@@ -111,11 +111,11 @@ int server_start(Server *server);
  *
  * @return 1 on success, 0 on failure (e.g., memory allocation failed).
  */
-int server_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler);
+int client_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler);
 
 
 /**
- * @brief Removes a route from the server's router list.
+ * @brief Removes a route from the client's router list.
  *
  * Deletes the route at the given index and shifts subsequent routes down.
  *
@@ -124,5 +124,5 @@ int server_add_route(RouterList *routers, method_t method, path_t path, HandlerF
  *
  * @return 1 on success, 0 if index is invalid or removal fails.
  */
-int server_remove_route(RouterList *router_lst, size_t index);
+int client_remove_route(RouterList *router_lst, size_t index);
 

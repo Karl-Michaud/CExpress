@@ -122,9 +122,8 @@ Router extract_router(const char *header);
  * @brief Processes an HTTP request header and invokes the appropriate route handler.
  *
  * @param header The raw HTTP request header string.
- * @param router_lst Pointer to the RouterList containing registered routes.
- * @param client_sock The client socket descriptor.
+ * @param client The pointer to concerned client.
  * @return 1 if the request was successfully processed, 0 if no matching route was found.
  */
-int process_header(const char *header, RouterList *router_lst, int client_sock);
+int process_header(const char *header, client_t *client);
 

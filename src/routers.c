@@ -161,15 +161,12 @@ Router extract_router(const char *header) {
  * If found, executes the corresponding handler (TODO: implement).
  *
  * @param header Pointer to the HTTP request string.
- * @param router_lst Pointer to the RouterList.
- * @param client_sock Client socket file descriptor.
+ * @param client Pointer to the concerned client.
  * @return 1 if the route exists and processing can continue, 0 otherwise.
  */
-int process_header(const char *header, RouterList *router_lst, int client_sock) {
+int process_header(const char *header, client_t *client) {
     Router extracted_router = extract_router(header);
-    if (!extracted_router) {
-        return 0;
-    }
+    if (!extracted_router) return 0;
 
     if (!find_route(router_lst, router)) {
         // router not found. abort.
