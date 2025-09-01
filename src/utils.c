@@ -5,6 +5,9 @@
  * This file provides the implementation of helper functions declared in utils.h,
  * including splitting strings, extracting key-value pairs from HTTP headers,
  * and extracting individual lines from HTTP requests.
+ *
+ * @author Karl-Alexandre Michaud
+ * @date 2025-08-31
  */
 
 

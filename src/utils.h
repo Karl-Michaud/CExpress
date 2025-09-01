@@ -5,6 +5,9 @@
  * This header provides helper functions to process and extract data from HTTP requests,
  * such as splitting strings, extracting key-value pairs, and retrieving individual lines
  * from an HTTP header.
+ *
+ * @author Karl-Alexandre Michaud
+ * @date 2025-08-30
  */
 
 #pragma once
