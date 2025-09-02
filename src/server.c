@@ -80,6 +80,7 @@ void remove_client(Server *server, int index) {
     
     close(server->client_lst[index].client_sock);         // close socket
     free(server->client_lst[index].router_lst.items);
+    server->client_lst[index].router_lst.items = NULL;
     memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
 }
 
@@ -131,6 +132,7 @@ Server *server_init(int port, int max_clients, int backlog) {
             // Free previously allocated router lists
             for (int j = 0; j < i; j++) {
                 free(server->client_lst[j].router_lst.items);
+                server->client_lst[j].router_lst.items = NULL;
             }
             free(server->client_lst);
             free(server);
@@ -188,6 +190,7 @@ void server_free(Server *server) {
     }
     for (int j = 0; j < server->max_clients; j++) {
         free(server->client_lst[j].router_lst.items);
+        server->client_lst[j].router_lst.items = NULL;
     }
     free(server->client_lst);
     free(server);
