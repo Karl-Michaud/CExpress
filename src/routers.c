@@ -147,7 +147,7 @@ Router extract_router(const char *header) {
         router.method = DELETE;
     }
 
-    router.path = header_sep[1];
+    router.path = strdup(header_sep[1]);
     
     // Free all memory
     for (size_t i = 0; extracted_lines[i] != NULL; i++) {
