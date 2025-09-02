@@ -2,25 +2,26 @@
 
 
 /**
- * @brief Executes the handler for a route and sends the HTTP response to the client.
+ * @brief Executes the specified route handler and sends an HTTP response to the client.
  *
  * This function:
- * 1. Calls the route's handler to get the response body.
- * 2. Wraps it in a proper HTTP/1.1 response header using `add_http_header`.
- * 3. Sends the full response to the client's socket.
- * 4. Frees all dynamically allocated memory internally.
+ * 1. Invokes the route's handler function to generate the response body.
+ * 2. Constructs a valid HTTP/1.1 response by adding headers via `add_http_header`.
+ * 3. Sends the complete response (headers + body) through the client's socket.
+ * 4. Frees any dynamically allocated memory used in the process.
  *
- * @param header The original request header (can be used for logging, optional).
- * @param client Pointer to the client structure containing the socket.
- * @param router Pointer to the route containing the handler to execute.
+ * @param header      The original HTTP request header (optional, useful for logging or debugging).
+ * @param client_sock The socket file descriptor of the connected client.
+ * @param handler     The function pointer to the route handler responsible for generating the response body.
  *
- * @return 1 on successful send, 0 on failure.
+ * @return 1 if the response was successfully sent,
+ *         0 if an error occurred while executing the handler or sending the response.
  */
-int execute_handler(const char *header, client_t *client, Router *router) {
-    if (!router || !router->handler) return 0;
+int execute_handler(const char *header, int client_sock, HandlerFunc handler) {
+    if (client_sock == -1 || !handler) return 0;
 
     // Call the handler
-    char *handler_str = router->handler();
+    char *handler_str = handler();
     if (!handler_str) return 0;
 
     // Construct HTTP/1.1 response
@@ -30,7 +31,7 @@ int execute_handler(const char *header, client_t *client, Router *router) {
     if (!response) return 0;
     
     // Send response to client
-    ssize_t sent = write(client->client_sock, response, strlen(response));
+    ssize_t sent = write(client_sock, response, strlen(response));
     free(response);
 
     return (sent > 0) ? 1 : 0;

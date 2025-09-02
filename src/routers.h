@@ -21,7 +21,7 @@
  * @enum method_t
  * @brief Enumeration of supported HTTP methods.
  */
-typedef enum {GET, POST, PUT, DELETE} method_t;
+typedef enum {GET, POST, PUT, DELETE, FAIL} method_t;
 
 
 /**
@@ -109,11 +109,14 @@ Router extract_router(const char *header);
 
 
 /**
- * @brief Processes an HTTP request header and invokes the appropriate route handler.
+ * @brief Processes an HTTP request header and dispatches the request to the appropriate route handler.
  *
- * @param header The raw HTTP request header string.
- * @param client The pointer to concerned client.
- * @return 1 if the request was successfully processed, 0 if no matching route was found.
+ * @param header      The raw HTTP request header string.
+ * @param client_sock The socket file descriptor of the connected client.
+ * @param router_lst  The list of registered routes and their corresponding handlers.
+ *
+ * @return 1 if the request was successfully processed and handled, 
+ *         0 if no matching route was found.
  */
-int process_header(const char *header, client_t *client);
+ int process_header(const char *header, int client_sock, RouterList *router_lst);
 

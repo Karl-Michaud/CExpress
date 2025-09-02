@@ -79,7 +79,7 @@ void remove_client(Server *server, int index) {
     }
     
     close(server->client_lst[index].client_sock);         // close socket
-    free(server->client_lst[index].router_list.items);
+    free(server->client_lst[index].router_lst.items);
     memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
 }
 
@@ -99,7 +99,7 @@ void remove_client(Server *server, int index) {
  *
  * @note Caller is responsible for freeing resources using `server_free()`.
  */
-server *server_init(int port, int max_clients, int backlog) {
+Server *server_init(int port, int max_clients, int backlog) {
     // setup server struct
     Server *server = malloc(sizeof(Server));
     if (!server) {
@@ -123,20 +123,20 @@ server *server_init(int port, int max_clients, int backlog) {
         server->client_lst[i].client_sock = 0;
 
         // Init router list for each client
-        server->client_lst[i].router_list.count = 0;
-        server->client_lst[i].router_list.capacity = 4;
-        server->client_lst[i].router_list.items = malloc(server->client_lst[i].router_list.capacity * sizeof(Router));
-        if (!server->client_lst[i].router_list.items) {
+        server->client_lst[i].router_lst.count = 0;
+        server->client_lst[i].router_lst.capacity = 4;
+        server->client_lst[i].router_lst.items = malloc(server->client_lst[i].router_lst.capacity * sizeof(Router));
+        if (!server->client_lst[i].router_lst.items) {
             perror("malloc failed. aborting server initialization.");
             // Free previously allocated router lists
             for (int j = 0; j < i; j++) {
-                free(server->client_lst[j].router_list.items);
+                free(server->client_lst[j].router_lst.items);
             }
             free(server->client_lst);
             free(server);
             return NULL;
         }
-        memset(server->client_lst[i].router_list.items, 0, server->client_lst[i].router_list.capacity * sizeof(Router));
+        memset(server->client_lst[i].router_lst.items, 0, server->client_lst[i].router_lst.capacity * sizeof(Router));
     }
         
     memset(&server->addr, 0, sizeof(server->addr));
@@ -187,7 +187,7 @@ void server_free(Server *server) {
         close(server->sockfd);
     }
     for (int j = 0; j < server->max_clients; j++) {
-        free(server->client_lst[j].router_list.items);
+        free(server->client_lst[j].router_lst.items);
     }
     free(server->client_lst);
     free(server);
@@ -307,7 +307,7 @@ int server_start(Server *server) {
 
                 } else {
                     // Read was successful. process data!
-                    if (!process_header(buffer, &server->client_lst[i])) {
+                    if (!process_header(buffer, server->client_lst[i].client_sock, &server->client_lst[i].router_lst)) {
                         // Route not found or handler failed
                         const char *not_found = "HTTP/1.1 404 Not Found\r\n"
                                                 "Content-Length: 0\r\n"

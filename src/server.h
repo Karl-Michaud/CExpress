@@ -37,11 +37,10 @@
  * @struct client_t
  * @brief Represents a connected client.
  */
-typedef struc
 typedef struct {
     int client_sock;          // client socket
     struct sockaddr_in addr;  // client address
-    RouterList router_lst     // routing list
+    RouterList router_lst;     // routing list
 } client_t;
 
 
@@ -81,9 +80,8 @@ Server *server_init(int port, int max_clients, int backlog);
  * Closes the socket and deallocates any memory used by the server instance.
  *
  * @param server Pointer to the Server struct to be freed.
- * @return 0 on success, -1 on failure (e.g., invalid pointer).
  */
-int server_free(Server *server);
+void server_free(Server *server);
 
 
 /**

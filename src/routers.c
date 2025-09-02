@@ -11,7 +11,7 @@
  * @date 2025-09-01
  */
 
-#include "router.h"
+#include "routers.h"
 
 
 /**
@@ -109,9 +109,13 @@ int find_route(RouterList *router_lst, Router router) {
  * @return Router struct with method and path set. If parsing fails, returns a Router with all fields zeroed.
  */
 Router extract_router(const char *header) {
-    char **extracted_lines = extracted_lines(header, strlen(header));
+    char **extracted_lines = extract_lines(header, strlen(header));
     if (!extracted_lines) {
-        return NULL;
+        Router temp_router;
+        temp_router.method = FAIL;
+        temp_router.path = NULL;
+        temp_router.handler = NULL;
+        return temp_router;
     }
 
     char **header_sep = split(extracted_lines[0], strlen(extracted_lines[0]), ' ');
@@ -120,7 +124,12 @@ Router extract_router(const char *header) {
            free(extracted_lines[i]);
        } 
        free(extracted_lines);
-       return NULL;
+
+       Router temp_router;
+       temp_router.method = FAIL;
+       temp_router.path = NULL;
+       temp_router.handler = NULL;
+       return temp_router;
     }
     
     Router router;
@@ -155,24 +164,29 @@ Router extract_router(const char *header) {
 
 
 /**
- * @brief Processes an HTTP header against the RouterList.
+ * @brief Processes an HTTP request header and attempts to execute the corresponding route handler.
  *
- * Extracts the router from the header and checks if it exists in the list.
- * If found, executes the corresponding handler (TODO: implement).
+ * Parses the HTTP header to extract the method and path, searches for a matching route in the RouterList,
+ * and invokes the associated handler if a match is found.
  *
- * @param header Pointer to the HTTP request string.
- * @param client Pointer to the concerned client.
- * @return 1 if the route exists and processing can continue, 0 otherwise.
+ * @param header      The raw HTTP request header string.
+ * @param client_sock The socket file descriptor of the connected client.
+ * @param router_lst  The list of registered routes and their corresponding handlers.
+ *
+ * @return 1 if a matching route was found and its handler was executed successfully, 
+ *         0 if no matching route exists or the header is invalid.
  */
-int process_header(const char *header, client_t *client) {
+int process_header(const char *header, int client_sock, RouterList *router_lst) {
     Router extracted_router = extract_router(header);
+    if (extracted_router.method == FAIL) {
+        return 0;
+    }
     
-    int index = find_route(&client->router_lst, extracted_router);
+    int index = find_route(router_lst, extracted_router);
     if (index == -1) {
         // router not found
         return 0;
     }
     
-    return execute_handler(header, client, &client->router_lst.items[i]); 
+    return execute_handler(header, client_sock, router_lst->items[index].handler); 
 }
-
