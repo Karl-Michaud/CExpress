@@ -54,7 +54,7 @@ typedef struct {
     int max_clients;          // server max amount of concurrent clients
     client_t *client_lst;     // list of connected clients
     int backlog;              // max number of partially completed connections (queue for clients)
-    RouterList router_lst;     // routing list        
+    RouterList router_lst;    // global routing list
 } Server;
 
 
