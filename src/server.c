@@ -92,13 +92,16 @@ void remove_client(Server *server, int index) {
  * @param port        The TCP port number for the server to listen on.
  * @param max_clients Maximum number of concurrent clients supported.
  * @param backlog     Maximum number of queued connection requests.
+ * @param mode Server binding mode:
+ *        - DEV  : Bind to localhost (127.0.0.1), restricting access to the local machine.
+ *        - PROD : Bind to all interfaces (0.0.0.0), allowing external network access.
  *
  * @return Pointer to a dynamically allocated Server structure on success, 
  *         or NULL on failure.
  *
  * @note Caller is responsible for freeing resources using `server_free()`.
  */
-Server *server_init(int port, int max_clients, int backlog) {
+Server *server_init(int port, int max_clients, int backlog, Mode mode) {
     // setup server struct
     Server *server = malloc(sizeof(Server));
     if (!server) {
@@ -109,6 +112,7 @@ Server *server_init(int port, int max_clients, int backlog) {
     server->port = port;
     server->max_clients = max_clients;
     server->backlog = backlog;
+    server->mode = mode;
     server->sockfd = -1; // Will be changed later if socket creation successful. Set to -1 for safety.
 
     server->client_lst = malloc(sizeof(client_t) * max_clients);
@@ -137,7 +141,21 @@ Server *server_init(int port, int max_clients, int backlog) {
     memset(&server->addr, 0, sizeof(server->addr));
     server->addr.sin_family = AF_INET;
     server->addr.sin_port = htons(port); // Necessary for big endian vs little endian
-    server->addr.sin_addr.s_addr = INADDR_ANY;
+    
+    if (mode == DEV) {
+        server->addr.sin_addr.s_addr = inet_addr(LOCALHOST_IP);
+        if (server->addr.sin_addr.s_addr == INADDR_NONE) {
+            perror("inet_addr failed for localhost. Aborting server initialization.");
+            server_free(server);
+            return NULL;
+        }
+    } else if (mode == PROD) {
+        server->addr.sin_addr.s_addr = INADDR_ANY;
+    } else {
+        perror("Invalid mode specified. Must be DEV or PROD. Aborting server initialization.");
+        server_free(server);
+        return NULL;
+    }
         
     // Socket creation
     int sockfd = socket(AF_INET, SOCK_STREAM, 0); // Protocol set by default to TCP
@@ -150,7 +168,7 @@ Server *server_init(int port, int max_clients, int backlog) {
 
     int opt = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        perror("setsockopt failed");
+        perror("setsockopt failed. Aborting server initialization.");
         server_free(server);
         return NULL;
     }
@@ -203,6 +221,7 @@ void server_free(Server *server) {
  * @return 1 on successful shutdown, -1 if an error occurred during setup.
  *
  * @note This function runs an infinite loop until interrupted by SIGINT.
+ *       When the loop terminates, server_free() is automatically called to clean up resources.
  */
 int server_start(Server *server) {
     fd_set sock_set;     // all client/server sockets being monitored by server (used for select() sys call)

@@ -30,7 +30,18 @@
 
 // User defined constants
 #define BUFFER_SIZE 1024
+#define LOCALHOST_IP "127.0.0.1"
 
+
+/**
+ * @enum Mode
+ * @brief Specifies the server binding mode.
+ *
+ * This enumeration determines how the server socket binds to the host.
+ * - DEV  : Bind to localhost (127.0.0.1), restricting access to the local machine.
+ * - PROD : Bind to all interfaces (0.0.0.0), allowing external network access.
+ */
+typedef enum { DEV, PROD } Mode;
 
 
 /**
@@ -51,6 +62,7 @@ typedef struct {
     int sockfd;               // server socket
     struct sockaddr_in addr;  // server address
     int port;                 // server port
+    Mode mode;
     int max_clients;          // server max amount of concurrent clients
     client_t *client_lst;     // list of connected clients
     int backlog;              // max number of partially completed connections (queue for clients)
@@ -67,11 +79,15 @@ typedef struct {
  * @param port The TCP port number the server should bind to.
  * @param max_clients Maximum number of concurrent client connections allowed.
  * @param backlog Maximum number of pending connections in the listen queue.
+ * @param mode Server binding mode:
+ *        - DEV  : Bind to localhost (127.0.0.1), restricting access to the local machine.
+ *        - PROD : Bind to all interfaces (0.0.0.0), allowing external network access.
+ *
  * @return Pointer to a dynamically allocated Server struct on success, or NULL on failure.
  *
  * @note Use server_free() to properly shut down and free allocated memory.
  */
-Server *server_init(int port, int max_clients, int backlog);
+Server *server_init(int port, int max_clients, int backlog, Mode mode);
 
 
 /**
