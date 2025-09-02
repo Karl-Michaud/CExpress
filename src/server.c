@@ -79,8 +79,6 @@ void remove_client(Server *server, int index) {
     }
     
     close(server->client_lst[index].client_sock);         // close socket
-    free(server->client_lst[index].router_lst.items);
-    server->client_lst[index].router_lst.items = NULL;
     memset(&server->client_lst[index], 0, sizeof(client_t)); // zero out client struct
 }
 
@@ -119,27 +117,22 @@ Server *server_init(int port, int max_clients, int backlog) {
         free(server);
         return NULL;
     }
+
     for (int i = 0; i < max_clients; i++) {
         memset(&server->client_lst[i], 0, sizeof(client_t)); // ensure safety by removing old data
         server->client_lst[i].client_sock = 0;
-
-        // Init router list for each client
-        server->client_lst[i].router_lst.count = 0;
-        server->client_lst[i].router_lst.capacity = 4;
-        server->client_lst[i].router_lst.items = malloc(server->client_lst[i].router_lst.capacity * sizeof(Router));
-        if (!server->client_lst[i].router_lst.items) {
-            perror("malloc failed. aborting server initialization.");
-            // Free previously allocated router lists
-            for (int j = 0; j < i; j++) {
-                free(server->client_lst[j].router_lst.items);
-                server->client_lst[j].router_lst.items = NULL;
-            }
-            free(server->client_lst);
-            free(server);
-            return NULL;
-        }
-        memset(server->client_lst[i].router_lst.items, 0, server->client_lst[i].router_lst.capacity * sizeof(Router));
     }
+    // Initialize global router list for the server
+    server->router_lst.count = 0;
+    server->router_lst.capacity = 4;
+    server->router_lst.items = malloc(server->router_lst.capacity * sizeof(Router));
+    if (!server->router_lst.items) {
+        perror("malloc failed. aborting server initialization.");
+        free(server->client_lst);
+        free(server);
+        return NULL;
+    }
+    memset(server->router_lst.items, 0, server->router_lst.capacity * sizeof(Router));
         
     memset(&server->addr, 0, sizeof(server->addr));
     server->addr.sin_family = AF_INET;
@@ -188,10 +181,8 @@ void server_free(Server *server) {
     if (server->sockfd != -1) {
         close(server->sockfd);
     }
-    for (int j = 0; j < server->max_clients; j++) {
-        free(server->client_lst[j].router_lst.items);
-        server->client_lst[j].router_lst.items = NULL;
-    }
+    // Free global router list
+    free(server->router_lst.items);
     free(server->client_lst);
     free(server);
 }
@@ -310,7 +301,7 @@ int server_start(Server *server) {
 
                 } else {
                     // Read was successful. process data!
-                    if (!process_header(buffer, server->client_lst[i].client_sock, &server->client_lst[i].router_lst)) {
+                    if (!process_header(buffer, server->client_lst[i].client_sock, &server->router_lst)) {
                         // Route not found or handler failed
                         const char *not_found = "HTTP/1.1 404 Not Found\r\n"
                                                 "Content-Length: 0\r\n"
@@ -337,45 +328,47 @@ int server_start(Server *server) {
 
 
 /**
- * @brief Adds a new route to the client's router list.
+ * @brief Registers a new route in the server's RouterList for handling HTTP requests.
  *
- * Creates a Router struct from the provided method, path, and handler,
- * and adds it to the dynamic RouterList. Expands the list capacity if needed.
+ * This function associates an HTTP method and path with a specific handler function.
+ * If the RouterList is at capacity, it automatically resizes to accommodate the new route.
  *
- * @param routers Pointer to the RouterList where the route will be added.
- * @param method  The HTTP method (GET, POST, PUT, DELETE) for this route.
- * @param path    The path (URL) that this route should match.
- * @param handler The function to handle requests matching this method and path.
+ * @param server  Pointer to the Server instance where the route will be added.
+ * @param method  The HTTP method (e.g., GET, POST, PUT, DELETE) for the route.
+ * @param path    The URL path string for the route.
+ * @param handler The function pointer to the handler that processes requests matching the method and path.
  *
- * @return 1 on success, 0 if adding the route fails (e.g., memory allocation failure).
+ * @return 1 on success,
+ *         0 on failure (e.g., memory allocation error or invalid parameters).
  */
-int client_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler) {
+int server_add_route(Server *server, method_t method, path_t path, HandlerFunc handler) {
     Router new_router;
     new_router.method = method;
     new_router.path = path;
     new_router.handler = handler;
 
-    return add_route(routers, new_router);
+    return add_route(&server->router_lst, new_router);
 }
 
 
 /**
- * @brief Removes a route from the client's router list by its index.
+ * @brief Unregisters a route from the server's RouterList.
  *
- * Retrieves the Router at the given index and removes it from the RouterList.
- * The route list is compacted to fill the removed slot.
+ * This function searches for the route matching the specified HTTP method and path,
+ * and removes it if found. The RouterList is compacted by shifting remaining routes down.
  *
- * @param router_lst Pointer to the RouterList.
- * @param index      Index of the route to remove (0-based).
+ * @param server Pointer to the Server instance from which the route will be removed.
+ * @param method The HTTP method of the route to remove.
+ * @param path   The URL path of the route to remove.
  *
- * @return 1 if the route was successfully removed, 0 if the index is invalid.
+ * @return 1 if the route was successfully removed,
+ *         0 if the route does not exist or an error occurred.
  */
-int client_remove_route(RouterList *router_lst, size_t index) {
-    if (index >= router_lst->count) {
-        return 0;
-    }
+int server_remove_route(Server *server, method_t method, path_t path) {
+    Router temp_router;
+    temp_router.method = method;
+    temp_router.path = path;
+    temp_router.handler = NULL;
 
-    Router router_remove = router_lst->items[index];
-    return remove_route(router_lst, router_remove);
+    return remove_route(&server->router_lst, temp_router);
 }
-

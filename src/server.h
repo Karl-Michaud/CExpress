@@ -40,7 +40,6 @@
 typedef struct {
     int client_sock;          // client socket
     struct sockaddr_in addr;  // client address
-    RouterList router_lst;     // routing list
 } client_t;
 
 
@@ -54,7 +53,8 @@ typedef struct {
     int port;                 // server port
     int max_clients;          // server max amount of concurrent clients
     client_t *client_lst;     // list of connected clients
-    int backlog;              // max number of partially completed connections (queue for clients)             
+    int backlog;              // max number of partially completed connections (queue for clients)
+    RouterList router_lst;     // routing list        
 } Server;
 
 
@@ -97,30 +97,34 @@ int server_start(Server *server);
 
 
 /**
- * @brief Adds a new route to the client's router list for handling HTTP requests.
+ * @brief Registers a new route in the server's RouterList for handling HTTP requests.
  *
- * This function associates an HTTP method and path with a handler function.
- * If the router list is full, it will automatically resize the list.
+ * This function associates an HTTP method and path with a specific handler function.
+ * If the RouterList is at capacity, it automatically resizes to accommodate the new route.
  *
- * @param routers Pointer to the RouterList in which to add the new route.
- * @param method The HTTP method (GET, POST, PUT, DELETE) for this route.
- * @param path The URL path string for this route.
- * @param handler Function pointer that will handle requests matching method and path.
+ * @param server  Pointer to the Server instance where the route will be added.
+ * @param method  The HTTP method (e.g., GET, POST, PUT, DELETE) for the route.
+ * @param path    The URL path string for the route.
+ * @param handler The function pointer to the handler that processes requests matching the method and path.
  *
- * @return 1 on success, 0 on failure (e.g., memory allocation failed).
+ * @return 1 on success,
+ *         0 on failure (e.g., memory allocation error or invalid parameters).
  */
-int client_add_route(RouterList *routers, method_t method, path_t path, HandlerFunc handler);
+int server_add_route(Server *server, method_t method, path_t path, HandlerFunc handler);
 
 
 /**
- * @brief Removes a route from the client's router list.
+ * @brief Unregisters a route from the server's RouterList.
  *
- * Deletes the route at the given index and shifts subsequent routes down.
+ * This function searches for the route matching the specified HTTP method and path,
+ * and removes it if found. The RouterList is compacted by shifting remaining routes down.
  *
- * @param router_lst Pointer to the RouterList from which the route will be removed.
- * @param index The index of the route to remove.
+ * @param server Pointer to the Server instance from which the route will be removed.
+ * @param method The HTTP method of the route to remove.
+ * @param path   The URL path of the route to remove.
  *
- * @return 1 on success, 0 if index is invalid or removal fails.
+ * @return 1 if the route was successfully removed,
+ *         0 if the route does not exist or an error occurred.
  */
-int client_remove_route(RouterList *router_lst, size_t index);
+int server_remove_route(Server *server, method_t method, path_t path);
 
