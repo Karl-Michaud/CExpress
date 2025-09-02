@@ -287,3 +287,48 @@ fail:
     return NULL;
 }
 
+
+/**
+ * @brief Adds an HTTP/1.1 response header to a given buffer.
+ *
+ * This function prepends a minimal HTTP/1.1 response header (status 200 OK,
+ * content-type text/plain, content-length) to the provided body buffer.
+ *
+ * @param buffer Pointer to the response body buffer.
+ * @param buff_size Size in bytes of the response body.
+ *
+ * @return A dynamically allocated string containing the full HTTP/1.1 response,
+ *         including the header and body. The caller is responsible for freeing
+ *         this string using free().
+ *
+ * @note Only HTTP/1.1 is supported. The function assumes the response is text/plain.
+ */
+char *add_http_header(const char *buffer, size_t buff_size) {
+    const char *header_fmt =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: %zu\r\n"
+        "\r\n";
+
+    // Compute the header size
+    size_t header_len = snprintf(NULL, 0, header_fmt, buff_size);
+
+    // Allocate memory for header + body
+    char *response = malloc(header_len + buff_size + 1);
+    if (!response) {
+        perror("malloc failed for HTTP response");
+        return NULL;
+    }
+
+    // Write header
+    snprintf(response, header_len + 1, header_fmt, buff_size);
+
+    // Append body
+    memcpy(response + header_len, buffer, buff_size);
+
+    // Null-terminate
+    response[header_len + buff_size] = '\0';
+
+    return response;
+}
+

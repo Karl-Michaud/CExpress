@@ -61,3 +61,20 @@ char **split(const char *buffer, size_t buff_size, const char sep);
  */
 char **extract_lines(const char *buffer, size_t buff_size);
 
+
+/**
+ * @brief Adds an HTTP/1.1 response header to a given buffer.
+ *
+ * This function prepends a minimal HTTP/1.1 response header (status 200 OK, 
+ * content-type text/plain, content-length) to the provided body buffer.
+ *
+ * @param buffer Pointer to the response body buffer.
+ * @param buff_size Size in bytes of the response body.
+ *
+ * @return A dynamically allocated string containing the full HTTP/1.1 response,
+ *         including the header and body. The caller is responsible for freeing
+ *         this string using free().
+ *
+ * @note Only HTTP/1.1 is supported. The function assumes the response is text/plain.
+ */
+char *add_http_header(const char *buffer, size_t buff_size);
