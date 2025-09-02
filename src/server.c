@@ -306,9 +306,16 @@ int server_start(Server *server) {
                     }
 
                 } else {
-                    // Read was successfull
-                    // process data!
-                    process_header(buffer, &server->client_lst[i]);
+                    // Read was successful. process data!
+                    if (!process_header(buffer, &server->client_lst[i])) {
+                        // Route not found or handler failed
+                        const char *not_found = "HTTP/1.1 404 Not Found\r\n"
+                                                "Content-Length: 0\r\n"
+                                                "Connection: close\r\n\r\n";
+                        write(server->client_lst[i].client_sock, not_found, strlen(not_found));
+
+                        remove_client(server, i);
+                    }
                     continue;
                 }
            }
