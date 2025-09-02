@@ -2,33 +2,37 @@
 
 
 /**
- * @brief Executes the handler associated with a route and constructs an HTTP response.
+ * @brief Executes the handler for a route and sends the HTTP response to the client.
  *
  * This function:
- * 1. Calls the provided route's handler function.
- * 2. Wraps the returned string in a proper HTTP/1.1 response header using `add_http_header`.
- * 3. Frees the string returned by the handler to remove the burden from the caller.
+ * 1. Calls the route's handler to get the response body.
+ * 2. Wraps it in a proper HTTP/1.1 response header using `add_http_header`.
+ * 3. Sends the full response to the client's socket.
+ * 4. Frees all dynamically allocated memory internally.
  *
- * @param header   The original request header (used for logging or future extensions, can be NULL).
- * @param client   Pointer to the client structure (currently unused but available for context).
- * @param router   Pointer to the route containing the handler to execute.
+ * @param header The original request header (can be used for logging, optional).
+ * @param client Pointer to the client structure containing the socket.
+ * @param router Pointer to the route containing the handler to execute.
  *
- * @return A dynamically allocated string containing the full HTTP/1.1 response.
- *         The caller is responsible for freeing this string using `free()`.
+ * @return 1 on successful send, 0 on failure.
  */
-char *execute_handler(const char *header, client_t *client, Router *router) {
-    if (!router || !router->handler) return NULL;
+int execute_handler(const char *header, client_t *client, Router *router) {
+    if (!router || !router->handler) return 0;
 
-    // Call the handler; it returns a dynamically allocated string
+    // Call the handler
     char *handler_str = router->handler();
-    if (!handler_str) return NULL;
+    if (!handler_str) return 0;
 
-    // Construct full HTTP/1.1 response
+    // Construct HTTP/1.1 response
     char *response = add_http_header(handler_str, strlen(handler_str));
-
-    // Free the handler's string to prevent memory leaks
     free(handler_str);
 
-    return response;
+    if (!response) return 0;
+    
+    // Send response to client
+    ssize_t sent = write(client->client_sock, response, strlen(response));
+    free(response);
+
+    return (sent > 0) ? 1 : 0;
 }
 

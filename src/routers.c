@@ -87,15 +87,15 @@ int remove_route(RouterList *router_lst, Router router) {
  *
  * @param router_lst Pointer to the RouterList.
  * @param router Router to search for.
- * @return 1 if found, 0 otherwise.
+ * @return index if found, -1 otherwise.
  */
 int find_route(RouterList *router_lst, Router router) {
     for (size_t i = 0; i < router_lst->count; i++) {
         if (same_router(router_lst->items[i], router)) {
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 
 
@@ -166,15 +166,13 @@ Router extract_router(const char *header) {
  */
 int process_header(const char *header, client_t *client) {
     Router extracted_router = extract_router(header);
-    if (!extracted_router) return 0;
-
-    if (!find_route(router_lst, router)) {
-        // router not found. abort.
+    
+    int index = find_route(&client->router_lst, extracted_router);
+    if (index == -1) {
+        // router not found
         return 0;
     }
-
-    // TODO: execute method for given route
     
-    return 1;
+    return execute_handler(header, client, &client->router_lst.items[i]); 
 }
 
