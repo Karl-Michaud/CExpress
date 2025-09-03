@@ -41,7 +41,7 @@
  */
 
 
-#include "server.h"
+#include "../include/CExpress/server.h"
 
 
 volatile sig_atomic_t running = 0; // `volatile` prevents compiler optimizations that assume the value never changes unexpectedly.  

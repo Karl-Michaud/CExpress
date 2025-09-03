@@ -25,8 +25,8 @@
 #include <signal.h> // Necessary for handling signals
 #include <errno.h>    // defines errno, EINTR, EAGAIN, EWOULDBLOCK
 
-#include "utils.h"
-#include "routers.h"
+#include "../../src/utils.h"
+#include "../../src/routers.h"
 
 // User defined constants
 #define BUFFER_SIZE 1024
