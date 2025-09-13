@@ -5,7 +5,7 @@
 // @ts-nocheck
 const sidebars = {
   tutorialSidebar: [
-    'intro',
+    'index',
     'installation',
     'api-reference',
     'usage-examples',
