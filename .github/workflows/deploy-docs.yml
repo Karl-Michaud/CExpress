@@ -2,10 +2,10 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [documentation]
     paths: ['docs/**']
   pull_request:
-    branches: [main]
+    branches: [documentation]
     paths: ['docs/**']
 
 jobs:
@@ -19,13 +19,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: docs/package-lock.json
 
       - name: Install dependencies
         run: |
           cd docs
-          npm ci
+          npm install
 
       - name: Build documentation
         run: |
@@ -33,7 +31,7 @@ jobs:
           npm run build
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/documentation'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
