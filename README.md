@@ -1,6 +1,6 @@
 # 🚀 CExpress
 
-> **A lightweight HTTP server framework for C** — bringing the simplicity of Express.js to the power and performance of C.
+> **A lightweight HTTP server framework for C** that brings the simplicity of Express.js to the power and performance of C.
 
 CExpress is a minimal, high-performance HTTP server framework written in C that provides Express.js-like functionality for building web applications and APIs. Perfect for microservices, APIs, static file serving, and rapid prototyping without the overhead of larger frameworks.
 
