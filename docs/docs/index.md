@@ -25,7 +25,7 @@ Perfect for microservices, APIs, static file serving, and rapid prototyping with
 ## Quick Example
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 
