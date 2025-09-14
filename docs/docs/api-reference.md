@@ -67,7 +67,7 @@ Removes a route from the server.
 ## Usage
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 
 char *hello_handler(void) {
     char *response = malloc(50);

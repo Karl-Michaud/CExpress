@@ -10,7 +10,7 @@
 ## Basic Hello World
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +51,7 @@ int main(void) {
 ## JSON API
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -124,7 +124,7 @@ int main(void) {
 ## Static Files
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -198,7 +198,7 @@ int main(void) {
 ## REST API
 
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
