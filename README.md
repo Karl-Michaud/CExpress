@@ -273,5 +273,3 @@ SOFTWARE.
 ---
 
 **Made with ❤️ by Karl-Alexandre Michaud**
-
-*Bringing the simplicity of Express.js to the power of C*
