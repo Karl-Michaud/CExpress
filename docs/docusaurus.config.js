@@ -4,6 +4,7 @@ const config = {
   tagline: 'A lightweight HTTP server framework for C that brings the simplicity of Express.js to the power and performance of C.',
   url: 'https://karl-michaud.github.io',
   baseUrl: '/CExpress/',
+  favicon: 'img/favicon.ico',
 
   organizationName: 'Karl-Michaud', // GitHub username
   projectName: 'CExpress',          // Repo name

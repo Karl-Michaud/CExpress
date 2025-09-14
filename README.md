@@ -1,8 +1,12 @@
 # 🚀 CExpress
 
-> **A lightweight HTTP server framework for C** that brings the simplicity of Express.js to the power and performance of C.
+> *Because C deserves frameworks as simple as Express.js* 
+
+**A lightweight HTTP server framework for C** that brings the simplicity of Express.js to the power and performance of C.
 
 CExpress is a minimal, high-performance HTTP server framework written in C that provides Express.js-like functionality for building web applications and APIs. Perfect for microservices, APIs, static file serving, and rapid prototyping without the overhead of larger frameworks.
+
+📖 Full documentation available at: [CExpress Docs](https://karl-michaud.github.io/CExpress)  
 
 ## 📚 Table of Contents
 
@@ -21,14 +25,14 @@ CExpress is a minimal, high-performance HTTP server framework written in C that 
 
 CExpress brings the familiar Express.js patterns to C development:
 
-- **Simple routing** with HTTP method support (GET, POST, PUT, DELETE)
-- **Handler-based architecture** for clean, modular code
-- **Static file serving** for web applications
-- **JSON API support** with built-in response formatting
-- **Memory management** with automatic cleanup
-- **Cross-platform** compatibility (Linux and macOS)
+- **Rapid Prototyping**: Build and test instantly  
+- **Simple routing**: GET, POST, PUT, DELETE  
+- **Handler-based architecture**: Modular, clean code  
+- **Static file serving**: Out of the box  
+- **JSON API support**: Built-in response formatting  
+- **Cross-platform**: Linux and macOS
 
-Built for developers who want the performance of C with the developer experience of modern web frameworks.
+---
 
 ## ✨ Features
 
@@ -50,20 +54,69 @@ Built for developers who want the performance of C with the developer experience
 - REST APIs and microservices
 - Static file hosting
 - Web application backends
-- Development servers
+- Rapid development servers
 - Prototyping and testing
 - Embedded web interfaces
 
 ## ⚙️ Installation
 
 *Installation instructions will be available when CExpress is released as a precompiled shared library.*
+## ⚙️ Installation
+
+CExpress can be installed as a shared C library in two ways:
+
+### 1. Install from GitHub (macOS & Linux)
+
+#### Prerequisites
+
+- GCC or Clang compiler
+- Make utility
+
+#### Install
+
+
+```bash
+git clone https://github.com/Karl-Michaud/CExpress.git
+cd CExpress
+make install
+```
+
+This will:
+- Copy the shared library (`libCExpress.dylib` on macOS, or `libCExpress.so` on Linux) to `/usr/local/lib/`
+- Copy the header files to `/usr/local/include/CExpress/`
+
+#### Uninstall
+
+To remove CExpress, run:
+
+```bash
+make uninstall
+```
+
+#### Notes
+
+- To install to a different location, set the `PREFIX` variable:
+  ```bash
+  make install PREFIX=/custom/path
+  ```
+- For Linux, the shared library extension is `.so`; for macOS, it is `.dylib`.
+
+
+### 2. Install via Homebrew (macOS only... coming soon)
+
+Homebrew support is planned for **macOS**.  
+When available, you will be able to install with:
+
+```bash
+brew install karl-michaud/cexpress/cexpress
+```
+
+---
 
 ## 🚀 Quick Start
 
-### Basic Server
-
 ```c
-#include "include/CExpress/server.h"
+#include <CExpress/server.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -95,7 +148,7 @@ int main(void) {
 ### Compile and Run
 
 ```bash
-gcc -o server main.c src/*.c -Iinclude -lregex
+gcc -o server main.c -lCExpress
 ./server
 ```
 
@@ -104,21 +157,18 @@ Test with:
 curl http://localhost:8080/hello
 ```
 
+---
+
 ## 📝 Examples
 
-The `examples/` directory contains comprehensive examples:
+Found in [examples/](https://github.com/Karl-Michaud/CExpress/tree/main/examples)
 
-### 1. **Basic Hello World** (`basic_hello_world.c`)
-Simple server with GET routes demonstrating basic functionality.
+1) **Hello World** → minimal GET route
+2) **JSON API** → Multi-method API with JSON responses, error handling, and data management.
+3) **Static Files** → serve HTML, CSS, JS
+4) **REST API** → Full CRUD operations with proper REST patterns and status codes.
 
-### 2. **JSON API** (`json_api.c`)
-Multi-method API with JSON responses, error handling, and data management.
-
-### 3. **Static Files** (`static_files.c`)
-Complete web application serving HTML, CSS, and JavaScript files.
-
-### 4. **REST API** (`rest_api.c`)
-Full CRUD operations with proper REST patterns and status codes.
+---
 
 ## 📖 API Reference
 
@@ -202,40 +252,29 @@ CExpress follows a modular architecture:
 7. **Send Response** → Client
 8. **Cleanup** → Memory Management
 
+---
+
 ## ⚡ Performance
 
 CExpress is designed for performance:
 
 - **Low Latency**: Direct socket programming
 - **Memory Efficient**: Minimal allocations and automatic cleanup
-- **Concurrent**: Multiple client support with select()
+- **Concurrent**: Multiple client support
 - **Lightweight**: Small binary size and memory footprint
+- **Rapid Prototyping**: Instantly build and test web applications without the overhead of large frameworks
 
-### Benchmarks
-
-- **Startup Time**: < 1ms
-- **Memory Usage**: ~2MB base
-- **Concurrent Clients**: 100+ (configurable)
-- **Request Latency**: < 1ms (local)
+---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
+I welcome contributions! Here's how to get started:
 
 ### Development Setup
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-### Code Style
-
-- Follow existing C style conventions
-- Add documentation for new functions
-- Include error handling
-- Test with multiple clients
+1. Fork the repository & create a feature branch
+2. Make your changes & add tests if applicable
+3. Submit a PR 🚀
 
 ### Areas for Contribution
 
@@ -245,6 +284,8 @@ We welcome contributions! Here's how to get started:
 - Enhanced error handling
 - Performance optimizations
 - Additional examples
+
+---
 
 ## 📄 License
 
@@ -272,6 +313,6 @@ SOFTWARE.
 
 ---
 
-**Made with ❤️ by Karl-Alexandre Michaud**
+**Made by Karl-Alexandre Michaud**
 
-*Bringing the simplicity of Express.js to the power of C*
+*Because C deserves frameworks as simple as Express.js*
