@@ -22,7 +22,7 @@ CExpress can be installed as a shared C library on your system, making it easy t
 2. **Build and Install the library and headers:**
 
    ```bash
-   sudo make install
+   make install
    ```
 
    This will:
@@ -46,6 +46,14 @@ gcc yourfile.c -lCExpress
 ## Uninstall
 
 To remove CExpress, delete the installed files:
+
+### Option 1:
+
+```bash
+make uninstall
+```
+
+### Option 2:
 
 ```bash
 sudo rm /usr/local/lib/libCExpress.dylib
