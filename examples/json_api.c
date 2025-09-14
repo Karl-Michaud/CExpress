@@ -5,7 +5,7 @@
  * This example shows how to create a more complex API that returns JSON responses
  * and handles different HTTP methods (GET, POST, PUT, DELETE).
  * 
- * Compile: gcc -o json_api json_api.c ../src/*.c -I../include
+ * Compile: gcc -o json_api json_api.c -lCExpress
  * Run: ./json_api
  * 
  * Test endpoints:

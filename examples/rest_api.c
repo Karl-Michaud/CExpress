@@ -6,7 +6,7 @@
  * status codes, and JSON responses. It includes a simple in-memory database
  * for managing products with full CRUD operations.
  * 
- * Compile: gcc -o rest_api rest_api.c ../src/*.c -I../include
+ * Compile: gcc -o rest_api rest_api.c -lCExpress
  * Run: ./rest_api
  * 
  * API Endpoints:

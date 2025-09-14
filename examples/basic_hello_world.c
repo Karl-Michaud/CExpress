@@ -5,7 +5,7 @@
  * This example shows the minimal setup required to create a CExpress server
  * with a single "Hello World" endpoint.
  * 
- * Compile: gcc -o basic_hello_world basic_hello_world.c ../src/*.c -I../include
+ * Compile: gcc -o basic_hello_world basic_hello_world.c -lCExpress
  * Run: ./basic_hello_world
  * Test: curl http://localhost:8080/hello
  * 

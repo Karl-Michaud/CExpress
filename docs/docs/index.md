@@ -20,7 +20,7 @@ Perfect for microservices, APIs, static file serving, and rapid prototyping with
 - **Fast** - Built on efficient C socket programming
 - **Simple** - Express.js-inspired API design
 - **Lightweight** - Minimal dependencies and memory footprint
-- **Cross-platform** - Works on Linux, macOS, and Windows
+- **Cross-platform** - Works on Linux and macOS
 
 ## Quick Example
 

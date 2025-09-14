@@ -26,7 +26,7 @@ CExpress brings the familiar Express.js patterns to C development:
 - **Static file serving** for web applications
 - **JSON API support** with built-in response formatting
 - **Memory management** with automatic cleanup
-- **Cross-platform** compatibility (Linux, macOS, Windows)
+- **Cross-platform** compatibility (Linux and macOS)
 
 Built for developers who want the performance of C with the developer experience of modern web frameworks.
 

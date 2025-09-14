@@ -6,7 +6,7 @@
  * like HTML, CSS, and JavaScript. It includes a simple file serving mechanism
  * and demonstrates different content types.
  * 
- * Compile: gcc -o static_files static_files.c ../src/*.c -I../include
+ * Compile: gcc -o static_files static_files.c -lCExpress
  * Run: ./static_files
  * 
  * Test endpoints:
