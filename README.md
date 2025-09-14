@@ -58,9 +58,8 @@ CExpress brings the familiar Express.js patterns to C development:
 - Prototyping and testing
 - Embedded web interfaces
 
-## ⚙️ Installation
+---
 
-*Installation instructions will be available when CExpress is released as a precompiled shared library.*
 ## ⚙️ Installation
 
 CExpress can be installed as a shared C library in two ways:
@@ -73,7 +72,6 @@ CExpress can be installed as a shared C library in two ways:
 - Make utility
 
 #### Install
-
 
 ```bash
 git clone https://github.com/Karl-Michaud/CExpress.git
@@ -110,6 +108,16 @@ When available, you will be able to install with:
 ```bash
 brew install karl-michaud/cexpress/cexpress
 ```
+
+#### Uninstall
+
+If you installed CExpress via Homebrew (macOS only), you can uninstall it with:
+
+```bash
+brew uninstall cexpress
+```
+
+This will remove the CExpress library and headers installed by Homebrew.
 
 ---
 
@@ -223,6 +231,8 @@ typedef enum {DEV, PROD} Mode;
 // PROD - all interfaces (0.0.0.0)
 ```
 
+---
+
 ## 🏗️ Architecture
 
 CExpress follows a modular architecture:
@@ -313,10 +323,6 @@ SOFTWARE.
 
 ---
 
-<<<<<<< HEAD
 **Made by Karl-Alexandre Michaud**
 
 *Because C deserves frameworks as simple as Express.js*
-=======
-**Made with ❤️ by Karl-Alexandre Michaud**
->>>>>>> b6fb1e407766db3cc174281a33c36b60c2c32867
