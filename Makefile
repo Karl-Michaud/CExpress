@@ -5,7 +5,7 @@ ifeq ($(UNAME_S),Darwin)
     # macOS settings
     CC = gcc
     SHARED_FLAG = -dynamiclib
-    INSTALL_NAME_FLAG = -Wl,-install_name,/usr/local/lib/libCExpress.dylib
+    INSTALL_NAME_FLAG = -Wl,-install_name,$(LIBPATH)/libCExpress.dylib
     LIB_EXT = dylib
 else ifeq ($(UNAME_S),Linux)
     # Linux settings

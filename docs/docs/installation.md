@@ -53,27 +53,49 @@ sudo rm -r /usr/local/include/CExpress/
   ```
 - For Linux, the shared library extension is `.so`; for macOS, it is `.dylib`.
 
----
 
-### Option 2: Install via Homebrew (macOS only, coming soon)
+### Option 2: Install via Homebrew (macOS)
 
-Homebrew support is planned for **macOS**.  
-When available, you will be able to install with:
+#### Install
+
 
 ```bash
-brew install karl-michaud/cexpress/cexpress
+brew tap Karl-Michaud/cexpress
+brew install cexpress
 ```
 
-#### Uninstall (Homebrew)
+(Optional) Verify installation:
 
-If you installed CExpress via Homebrew (macOS only), you can uninstall it with:
+```bash
+gcc -o test test.c -lCExpress
+./test
+```
+
+#### Uninstall
 
 ```bash
 brew uninstall cexpress
 ```
 
+(Optional) Remove the tap and clear cached downloads:
+
+```bash
+brew untap Karl-Michaud/cexpress
+brew cleanup
+```
+
 This will remove the CExpress library and headers installed by Homebrew.
 
+
+#### Notes
+
+- To install to a different location, set the `PREFIX` variable:
+  ```bash
+  sudo make install PREFIX=/custom/path
+  ```
+- For Linux, the shared library extension is `.so`; for macOS, it is `.dylib`.
+
+---
 
 ## Usage in Your Project
 
