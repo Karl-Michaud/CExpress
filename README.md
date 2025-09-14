@@ -313,6 +313,10 @@ SOFTWARE.
 
 ---
 
+<<<<<<< HEAD
 **Made by Karl-Alexandre Michaud**
 
 *Because C deserves frameworks as simple as Express.js*
+=======
+**Made with ❤️ by Karl-Alexandre Michaud**
+>>>>>>> b6fb1e407766db3cc174281a33c36b60c2c32867
