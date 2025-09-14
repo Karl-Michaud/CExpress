@@ -15,7 +15,7 @@ CExpress is a minimal, high-performance HTTP server framework written in C that 
 - [Architecture](#-architecture)
 - [Performance](#-performance)
 - [Contributing](#-contributing)
-- [License](#license)
+- [License](#-license)
 
 ## 📖 Overview
 
