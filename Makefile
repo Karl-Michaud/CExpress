@@ -45,8 +45,6 @@ install: $(TARGET)
 	cp $(TARGET) $(LIBPATH)/
 	cp include/CExpress/*.h $(INCPATH)/
 	@echo "CExpress installed:"
-	@echo "  Library: $(LIBPATH)/$(TARGET)"
-	@echo "  Headers: $(INCPATH)"
 
 uninstall:
 	rm -f $(LIBPATH)/$(TARGET)
