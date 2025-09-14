@@ -12,11 +12,11 @@ CExpress is a minimal, high-performance HTTP server framework written in C that 
 
 - [Overview](#-overview)
 - [Features](#-features)
-- [Installation](#-installation)
+- [Installation](#installation)
 - [Quick Start](#-quick-start)
 - [Examples](#-examples)
 - [API Reference](#-api-reference)
-- [Architecture](#-architecture)
+- [Architecture](#architecture)
 - [Performance](#-performance)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -60,7 +60,7 @@ CExpress brings the familiar Express.js patterns to C development:
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 CExpress can be installed as a shared C library in two ways:
 
@@ -233,7 +233,7 @@ typedef enum {DEV, PROD} Mode;
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 CExpress follows a modular architecture:
 
